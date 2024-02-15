@@ -8,9 +8,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
 // 다른것들은 잘 동작한다고 가정
@@ -37,7 +44,7 @@ public class UserServiceTests {
         String username = "edujeeho";
         // userRepository가 입력받을 user
         User userIn = new User(username, null, null, null);
-        // 2. userRepository가 반혼할 user
+        // 2. userRepository가 반환할 user
         User userOut = new User(username, null, null, null);
 //        userOut.setId(1L); // 잠깐 User의 id에 @Setter 붙임
 
@@ -66,6 +73,76 @@ public class UserServiceTests {
     @Test
     @DisplayName("username으로 읽기")
     public void testReadUsername(){
+        // given
+        String username = "subin";
+        User userOut = new User(username, null, null, null);
 
+        // userRepository.findByUsername(username)의 결과를 userOut으로 설정
+        when(userRepository.findByUsername(username))
+                .thenReturn(Optional.of(userOut));
+
+        // when - username으로 사용자를 읽는다.
+        UserDto result = userService.readUserByUsername(username);
+
+        // then - 돌아온 result를 검사한다.
+        assertEquals(username, result.getUsername());
     }
+
+    // UserDto를 이용해 User 수정
+    @Test
+    @DisplayName("UserDto를 이용해 User 수정")
+    public void testUpdateUser() {
+        // given
+        Long userId = 1L;
+        String username = "subin";
+        String bio = "Developer Developing Developers";
+        User  user = new User(username, null,null,null);
+
+        when(userRepository.findByUsername(user.getUsername()))
+                .thenReturn(Optional.of(user));
+
+        doAnswer(returnsFirstArg())
+                .when(userRepository)
+                .save(any());
+
+        // when
+        UserDto userDto = new UserDto(userId,username, null,null, bio, null);
+        // updateUser에서 오류 발생
+        UserDto result = userService.updateUser(userId, userDto);
+
+        // then
+        assertEquals(userId, result.getId());
+        assertEquals(username, result.getUsername());
+        assertEquals(bio, result.getBio());
+    }
+
+    @Test
+    @DisplayName("User에 이미지 추가")
+    public void testUpdateUserAvatar() {
+        // given
+        Long userId = 1L;
+        String username = "subin";
+        User user = new User(username, null,null,null);
+        when(userRepository.findByUsername(user.getUsername()))
+                .thenReturn(Optional.of(user));
+        doAnswer(returnsFirstArg())
+                .when(userRepository)
+                .save(any());
+
+        // when
+        MultipartFile mockFile = new MockMultipartFile(
+                "image",
+                "test.png",
+                MediaType.IMAGE_PNG_VALUE,
+                "test".getBytes()
+        );
+        // updateUserAvatar 에서 오류
+        UserDto userDto = userService.updateUserAvatar(userId, mockFile);
+
+        // then
+        assertEquals(userId, userDto.getId());
+        assertEquals(String.format("/static/%d/profile.png", userId), userDto.getAvatar());
+    }
+
+
 }
