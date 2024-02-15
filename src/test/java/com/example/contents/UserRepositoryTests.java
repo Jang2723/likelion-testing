@@ -23,7 +23,7 @@ public class UserRepositoryTests {
         // 테스트의 가독성을 높이는 패턴
         // given - 테스트를 진행하기 위한 기본 조건을 만들어 두는 부분
         // 내가 만들고자 하는 User 엔티티가 있는 상황에서
-        String username = "edujeeho";
+        String username = "subin";
         User user = new User(username, null, null, null);
 
         // when  - 실제로 테스트를 진행하는 부분
@@ -45,7 +45,7 @@ public class UserRepositoryTests {
     @DisplayName("새로운 User 추가 실패(중복 username)")
     public void testCreateUserFail(){
         // given - 어떤 특정 username을 가진 User가 이미 저장된 상황에서
-        String username = "edujeeho";
+        String username = "subin";
         User userGiven = new User(username, null, null, null);
         userRepository.save(userGiven);
 
@@ -62,7 +62,7 @@ public class UserRepositoryTests {
     public void testReadUser(){
         // given
         // 내가 읽고자 하는 특정 User가 데이터베이스에 저장이 된 이후의 상황에서
-        String username = "edujeeho";
+        String username = "subin";
         User userGiven = new User(username, null, null, null);
         userRepository.save(userGiven);
 
@@ -77,9 +77,57 @@ public class UserRepositoryTests {
         assertEquals(username, optionalUser.get().getUsername());
     }
 
+
     // 존재하지 않는 username을 가지고 조회하면 Optional.empty()가 반환된다.
+    @Test
+    @DisplayName("username으로 user 찾기 실패")
+    public void testReadUserFail() {
+        // given
+        String username = "subin";
+        User userGiven = new User(username, null,null,null);
+        userRepository.save(userGiven);
+
+        // when
+        Optional<User> optionalUser = userRepository.findByUsername("not_found");
+
+        // then
+        assertTrue(optionalUser.isEmpty());
+
+    }
 
     // 이미 존재하는 username을 검색해서 존재하는지 확인한다.
+    @Test
+    @DisplayName("username으로 user 존재 유무 판단")
+    public void testExistsByUsername() {
+        // given
+        String usernameExists = "subin";
+        String usernameExistsNot = "not_found";
+        User userGiven = new User(usernameExists,null,null,null);
+        userRepository.save(userGiven);
+
+        // when
+        // 존재하는지 찾기
+        Boolean exists = userRepository.existsByUsername(usernameExists);
+        Boolean existsNot = userRepository.existsByUsername(usernameExistsNot);
+
+        // then 판단
+        assertTrue(exists);
+        assertFalse(existsNot);
+    }
 
     // id를 가지고  User를 삭제한다.
+    @Test
+    @DisplayName("id로 user 삭제")
+    public void testDeleteById() {
+        // given
+        String username = "subin";
+        User target = new User(username,null,null,null);
+        Long id = userRepository.save(target).getId();
+
+        // when
+        userRepository.deleteById(id);
+
+        // then
+        assertFalse(userRepository.existsByUsername(username));
+    }
 }
