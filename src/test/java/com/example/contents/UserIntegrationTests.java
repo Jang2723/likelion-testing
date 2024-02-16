@@ -29,8 +29,8 @@ public class UserIntegrationTests {
     public void whenPostUserDto_thenReturnJson()
             throws Exception {
         // Post할 UserDto 준비
-        String username = "edujeeho";
-        String email = "edujeeho@gmail.com";
+        String username = "subin";
+        String email = "subin@fakemail.mail";
         String phone = "01012345678";
         UserDto userDto = new UserDto(
                 null,

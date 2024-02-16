@@ -43,7 +43,7 @@ public class UserControllerTests {
     public void testCreate() throws Exception {
         // given
         // userService.createUser 정의
-        String username = "edujeeho";
+        String username = "subin";
         UserDto requestDto = new UserDto(
                 null, username, null, null, null, null
         ); // requestDto 데이터 보내는 용도
